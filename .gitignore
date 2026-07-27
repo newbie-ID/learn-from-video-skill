@@ -1,0 +1,16 @@
+# 运行时缓存与下载产物（不提交，每台机器不同）
+library/*
+!library/.gitkeep
+
+# whisper.cpp 模型与二进制（setup 阶段下载，体积大）
+models/
+bin/
+*.bin
+
+# 环境快照（含本机绝对路径，每人不同）
+env.local.json
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+*.log

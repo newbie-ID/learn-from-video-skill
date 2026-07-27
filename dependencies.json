@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "comment": "learn-from-video-skill 的依赖清单。setup.sh 读取本文件去检测/安装三件套与下游 skill，并按 mirrors 顺序做 GitHub 加速 fallback。新增下游 skill 或镜像时只改这里，不动脚本。",
+
+  "tools": [
+    { "id": "ffmpeg",      "check": "ffmpeg -version",    "min": "any" },
+    { "id": "whisper.cpp", "check": "whisper-cli --help", "min": "any", "note": "优先预编译二进制；源码 make 作 fallback" },
+    { "id": "yt-dlp",      "check": "yt-dlp --version",   "min": "any" }
+  ],
+
+  "skills": [
+    { "name": "scholar-notes", "source": "AI_Animation 合集", "need_for": "学霸笔记（Style A/B）" },
+    { "name": "ppt-animation", "source": "AI_Animation 合集", "need_for": "PPT 复习卡（5 套主题）" },
+    { "name": "flowchart",     "source": "AI_Animation 合集", "need_for": "概念图 / 思维导图" }
+  ],
+
+  "collection_repo": "https://github.com/Unclecheng-li/AI_Animation",
+  "collection_subpath": "skills",
+
+  "whisper_models": {
+    "large-v3": { "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin", "size": "~3GB", "tier": "gpu_6gb+", "note": "中英皆准，显存≥6G 或大内存首选" },
+    "medium":   { "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin",   "size": "~1.5GB", "tier": "gpu_small|cpu_16gb", "note": "有 GPU 显存小 / 纯 CPU 内存≥16G" },
+    "small":    { "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin",    "size": "~500MB", "tier": "low_end", "note": "老机器 / 内存<8G，快但易错" }
+  },
+
+  "mirrors": [
+    "https://gh-proxy.com/",
+    "https://ghproxy.net/",
+    "https://ghproxy.homeboyc.cn/",
+    "http://toolwa.com/github/",
+    "https://github.akams.cn/"
+  ]
+}

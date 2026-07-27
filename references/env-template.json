@@ -1,0 +1,13 @@
+{
+  "_comment": "env.local.json 字段说明模板。真实文件由 setup.sh 自动生成（含本机绝对路径），请勿手写或直接编辑本文件。这里仅用于说明字段含义。",
+  "_location": "运行时位于 skill 根目录的 env.local.json（已被 .gitignore 忽略，每台机器不同）",
+
+  "ffmpeg":           "<string> FFmpeg 可执行文件绝对路径",
+  "whisper_cli":      "<string> whisper-cli（whisper.cpp）可执行文件绝对路径",
+  "whisper_model":    "<string> ggml-*.bin 模型文件绝对路径",
+  "model_tier":       "<string> large-v3 | medium | small（按硬件自动选定，中文优先）",
+  "ytdlp":            "<string> yt-dlp 可执行文件绝对路径",
+  "platform":         "<string> win32 | darwin | linux",
+  "agent_skills_dir": "<string> 当前 Agent 的标准 skills 目录绝对路径（下游 skill 装在这里）",
+  "downstream_skills":["scholar-notes", "ppt-animation", "flowchart"]
+}
