@@ -1,6 +1,6 @@
 ---
 name: learn-from-video-skill
-description: "下载视频（B站/YouTube 等链接，或本地视频文件）并转录成带时间戳的文稿，再基于文稿做：追问学习（RAG）、整理成学霸笔记/PPT复习卡/概念图、或生成自测题与闪卡。用于：看视频做笔记、教程转复习材料、视频内容问答、把视频变成可学习可自测的成品。首次使用自动下载并配置 whisper.cpp / yt-dlp / FFmpeg，优先使用官方字幕、无字幕时用 whisper.cpp 转录（中文优先）。下游渲染复用 AI_Animation 合集（scholar-notes / ppt-animation / flowchart）。"
+description: "下载视频或音频（B站/YouTube 链接，或本地视频/音频文件；支持面试录音、面试录屏复盘）并转录成带时间戳文稿，再基于文稿做：追问学习、学霸笔记/PPT复习卡/概念图、自测题与闪卡。用于：视频学习、面试复盘、录音转纪要、教程转复习材料。首次自动配置 whisper.cpp/yt-dlp/FFmpeg，字幕优先、无字幕用 whisper.cpp 转录（中文优先）。下游渲染复用 AI_Animation 合集（scholar-notes/ppt-animation/flowchart）。"
 version: "0.1.0"
 license: MIT
 triggers:
@@ -11,9 +11,15 @@ triggers:
   - "视频转文字"
   - "视频字幕"
   - "视频总结"
+  - "视频转笔记"
+  - "面试复盘"
+  - "面试录音"
+  - "面试录屏"
+  - "录音转文字"
+  - "音频转文字"
   - "learn-from-video"
   - "video to notes"
-  - "视频转笔记"
+  - "audio to notes"
 metadata:
   author: learn-from-video-skill contributors
   based_on: "AI_Animation (MIT, Unclecheng-li) + note-skill"
@@ -63,9 +69,9 @@ bash scripts/setup.sh
 
 看用户给的是什么：
 - 以 `http://` 或 `https://` 开头 → **URL 模式**（B站 / YouTube / yt-dlp 支持的任意平台）
-- 否则，是本地可访问的文件路径 → **本地模式**（跳过下载，直接转录）
+- 否则，是本地文件路径（**视频或音频**，如面试录音 mp3/wav/m4a、面试录屏 mp4、会议录音）→ **本地模式**（跳过下载，直接转录）
 
-> 用户可能一次给多个链接或文件；逐个处理，每个生成独立文稿。
+> `process.sh` 对视频和音频输入都适用：音频文件直接转，视频文件先由 FFmpeg 提取音频再转。用户可能一次给多个链接/文件，逐个处理，每个生成独立文稿。
 
 ### Step 2 — 执行 process.sh（确定性机械步骤）
 

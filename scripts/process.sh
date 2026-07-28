@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# process.sh — 日常 pipeline：把视频（URL 或本地文件）变成带时间戳文稿并缓存
+# process.sh — 日常 pipeline：把视频/音频（URL 或本地文件）变成带时间戳文稿并缓存
 #
 # 用法:
 #   bash scripts/process.sh url   "<视频链接>"     # B站/YouTube/yt-dlp 支持的任意平台
-#   bash scripts/process.sh local "<本地文件路径>"  # 跳过下载，直接转录
+#   bash scripts/process.sh local "<本地文件路径>"  # 本地视频或音频（面试录音 mp3/wav/m4a、录屏 mp4 等），跳过下载直接转录
 #
 # 流程: 取ID → 缓存命中? → 下载(URL)/跳过 → 字幕优先(官方CC直用,否则whisper.cpp) → transcript.{srt,txt} → 缓存
 # 成功时 stdout 末行输出: TRANSCRIPT_READY <library/<id> 绝对路径>
