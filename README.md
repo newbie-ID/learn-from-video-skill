@@ -67,9 +67,20 @@
 
 样例产物见 [`examples/`](./examples/)。
 
+## 转录性能（large-v3 模型）
+
+> 实测设备：RTX 4070 SUPER（12GB 显存）。GPU 使用 cublas-12.4 build。
+
+| 视频 | 时长 | CPU（估算） | GPU（实测） | 加速比 |
+|---|---|---|---|---|
+| 某面试录屏 | ~11.5 min | ~30–40 min | **122 s**（~2 min） | ~**15–20×** |
+| 课程视频（CS336 Lecture 1） | ~80 min | ~150–240 min | **522 s**（~8.7 min） | ~**17–28×** |
+
+> CPU 耗时基于 whisper.cpp large-v3 CPU build 通常 ~0.3–0.5× 实时估算，实际因 CPU 型号而异。
+
 ## 技术栈
 
-`whisper.cpp`（转录）· `yt-dlp`（下载）· `FFmpeg`（音频提取）· 下游 `scholar-notes` / `ppt-animation` / `flowchart`（渲染）
+`whisper.cpp`（转录 · CPU / cublas GPU 自动选择）· `yt-dlp`（下载）· `FFmpeg`（音频提取）· 下游 `scholar-notes` / `ppt-animation` / `flowchart`（渲染）
 
 ## 目录结构
 
