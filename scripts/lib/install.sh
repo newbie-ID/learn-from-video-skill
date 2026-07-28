@@ -17,9 +17,35 @@ install_ffmpeg() {
   case "$os" in
     darwin) cmd_exists brew && { brew install ffmpeg && return 0; } || { echo "[FAIL] brew 不可用，请手动: brew install ffmpeg" >&2; return 1; } ;;
     linux)  cmd_exists apt-get && { sudo apt-get update -qq && sudo apt-get install -y ffmpeg && return 0; } || { echo "[FAIL] 无 apt-get，请手动安装 ffmpeg" >&2; return 1; } ;;
-    win32)  cmd_exists winget && { winget install --id=Gyan.FFmpeg -e --accept-source-agreements --accept-package-agrees && return 0; } || { echo "[FAIL] 无 winget，请手动下载 ffmpeg 静态版加入 PATH" >&2; return 1; } ;;
-    *)      echo "[FAIL] 未知平台，请手动安装 ffmpeg" >&2; return 1 ;;
+    win32)
+      # 优先下载 BtbN 预编译（GitHub，可走镜像加速，路径可控、不依赖 PATH 刷新）
+      local ffd="$SKILL_ROOT/bin/ffmpeg"; mkdir -p "$ffd"
+      local tmp="$ffd/_dl.zip"
+      local url="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+      if download_with_mirrors "$url" "$tmp"; then
+        { cd "$ffd" && unzip -oq _dl.zip && rm -f _dl.zip; } 2>/dev/null || \
+        { cd "$ffd" && powershell.exe -NoProfile -Command "Expand-Archive -Force _dl.zip ." && rm -f _dl.zip; } 2>/dev/null
+        locate_ffmpeg >/dev/null && return 0
+        echo "[FAIL] ffmpeg 解压后未找到 ffmpeg.exe" >&2
+      fi
+      # fallback：winget（参数是 --accept-package-agreements，复数 -ments）
+      if cmd_exists winget; then
+        winget install --id=Gyan.FFmpeg -e --silent --accept-source-agreements --accept-package-agreements && return 0
+      fi
+      echo "[FAIL] ffmpeg 自动安装失败" >&2
+      echo "[HINT] 手动下载 ffmpeg 静态版（gyan.dev 或 BtbN）解压，确保 PATH 含 ffmpeg" >&2
+      return 1
+      ;;
+    *) echo "[FAIL] 未知平台，请手动安装 ffmpeg" >&2; return 1 ;;
   esac
+}
+
+# locate_ffmpeg → 路径走 stdout（系统 PATH 优先；否则在 bin/ffmpeg 下递归找，-type f 避免匹配目录名）
+locate_ffmpeg() {
+  cmd_exists ffmpeg && { command -v ffmpeg; return 0; }
+  local f; f=$(find "$SKILL_ROOT/bin/ffmpeg" -type f \( -name ffmpeg.exe -o -name ffmpeg \) 2>/dev/null | head -1)
+  [ -n "$f" ] && { echo "$f"; return 0; }
+  echo ""
 }
 
 # ---------------- whisper.cpp ----------------
@@ -46,15 +72,22 @@ install_whisper_cpp() {
   return 1
 }
 
-# locate_whisper_cli → 路径走 stdout（未找到输出空行）
+# locate_whisper_cli → 路径走 stdout（递归找，优先 whisper-cli 再 main；解压后常在 Release/ 子目录下）
 locate_whisper_cli() {
-  local dest="$SKILL_ROOT/bin/whisper.cpp" name ext p
-  for name in whisper-cli main; do
-    for ext in "" ".exe"; do
-      p="$dest/$name$ext"; [ -f "$p" ] && { echo "$p"; return 0; }
-    done
-  done
+  local dest="$SKILL_ROOT/bin/whisper.cpp" f
+  f=$(find "$dest" -type f \( -name whisper-cli.exe -o -name whisper-cli \) 2>/dev/null | head -1)
+  [ -n "$f" ] && { echo "$f"; return 0; }
+  f=$(find "$dest" -type f \( -name main.exe -o -name main \) 2>/dev/null | head -1)
+  [ -n "$f" ] && { echo "$f"; return 0; }
   cmd_exists whisper-cli && { command -v whisper-cli; return 0; }
+  echo ""
+}
+
+# locate_ytdlp → 路径走 stdout（系统 PATH 优先；否则在 bin/ 下找 yt-dlp / yt-dlp.exe）
+locate_ytdlp() {
+  cmd_exists yt-dlp && { command -v yt-dlp; return 0; }
+  local f; f=$(find "$SKILL_ROOT/bin" -maxdepth 1 -type f \( -name yt-dlp.exe -o -name yt-dlp \) 2>/dev/null | head -1)
+  [ -n "$f" ] && { echo "$f"; return 0; }
   echo ""
 }
 
@@ -83,15 +116,28 @@ install_ytdlp() {
 download_model() {
   local tier="$1"
   local modelsdir="$SKILL_ROOT/models"; mkdir -p "$modelsdir"
-  local fname="ggml-${tier}.bin" out="$modelsdir/$fname"
-  [ -f "$out" ] && { echo "[OK] 模型已存在：$out" >&2; echo "$out"; return 0; }
-  local url="https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$fname"
-  echo "[..] 下载 whisper 模型 $tier（$fname）→ $out" >&2
-  if curl -fL --connect-timeout 20 --max-time 7200 -o "$out" "$url"; then
-    [ -s "$out" ] && { echo "[OK] 模型下载完成" >&2; echo "$out"; return 0; }
+  local fname="ggml-${tier}.bin"
+  local out="$modelsdir/$fname"
+  # 大小校验：模型至少 100MB，避免上次失败留下的残缺文件被误判"已存在"
+  local sz=0; [ -f "$out" ] && sz=$(stat -c%s "$out" 2>/dev/null || echo 0)
+  if [ "${sz:-0}" -gt 100000000 ]; then
+    echo "[OK] 模型已存在（$((sz/1048576))MB）：$out" >&2; echo "$out"; return 0
   fi
-  echo "[FAIL] 模型下载失败：$url" >&2
-  echo "[HINT] 国内可用镜像（如 hf-mirror.com）下载 $fname 到 $out" >&2
+  rm -f "$out"
+  echo "[..] 下载 whisper 模型 $tier（$fname）→ $out" >&2
+  # 候选源：hf-mirror（国内镜像，优先）+ huggingface 直连；--ssl-no-revoke 规避 Windows schannel 吊销检查
+  local url
+  for url in \
+    "https://hf-mirror.com/ggerganov/whisper.cpp/resolve/main/$fname" \
+    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$fname"; do
+    if curl -fL --ssl-no-revoke --connect-timeout 20 --max-time 7200 -o "$out" "$url"; then
+      [ -s "$out" ] && { echo "[OK] 模型下载完成（$url）" >&2; echo "$out"; return 0; }
+    fi
+    rm -f "$out"
+    echo "[..] 该源失败，尝试下一个…" >&2
+  done
+  echo "[FAIL] 模型下载失败" >&2
+  echo "[HINT] 手动下载 $fname 到 $out（hf-mirror.com 或 huggingface.co）" >&2
   return 1
 }
 

@@ -24,7 +24,7 @@ download_with_mirrors() {
   local url="$1" dest="$2" prefix cand tried=""
   for prefix in "${_MIRRORS[@]}"; do
     cand="${prefix}${url}"
-    if curl -fL --connect-timeout 15 --max-time 1800 -o "$dest" "$cand" 2>/dev/null; then
+    if curl -fL --ssl-no-revoke --connect-timeout 15 --max-time 1800 -o "$dest" "$cand" 2>/dev/null; then
       [ -s "$dest" ] && { echo "[OK] 下载成功：${prefix:-直连}" >&2; return 0; }
     fi
     tried="${tried}    - ${prefix:-直连}${url}"$'\n'

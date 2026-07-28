@@ -37,12 +37,13 @@ echo
 
 # ---- [1/4] FFmpeg ----
 echo "---- [1/4] FFmpeg ----"
-FFMPEG_PATH=""
-if cmd_exists ffmpeg; then FFMPEG_PATH="$(command -v ffmpeg)"; echo "[OK] 已存在：$FFMPEG_PATH"
-else
-  install_ffmpeg && cmd_exists ffmpeg && FFMPEG_PATH="$(command -v ffmpeg)"
+FFMPEG_PATH="$(locate_ffmpeg)"
+if [ -z "$FFMPEG_PATH" ]; then
+  install_ffmpeg || { echo "[FAIL] ffmpeg 安装失败，初始化中止"; exit 1; }
+  FFMPEG_PATH="$(locate_ffmpeg)"
 fi
 [ -n "$FFMPEG_PATH" ] || { echo "[FAIL] ffmpeg 不可用，初始化中止"; exit 1; }
+echo "[OK] ffmpeg：$FFMPEG_PATH"
 
 # ---- [2/4] whisper.cpp ----
 echo "---- [2/4] whisper.cpp ----"
@@ -56,8 +57,8 @@ echo "[OK] whisper-cli：$WHISPER_PATH"
 
 # ---- [3/4] yt-dlp ----
 echo "---- [3/4] yt-dlp ----"
-if cmd_exists yt-dlp; then YTDLP_PATH="$(command -v yt-dlp)"
-else YTDLP_PATH="$(install_ytdlp)"; fi
+YTDLP_PATH="$(locate_ytdlp)"
+[ -z "$YTDLP_PATH" ] && YTDLP_PATH="$(install_ytdlp)"
 [ -n "$YTDLP_PATH" ] || { echo "[FAIL] yt-dlp 不可用，初始化中止"; exit 1; }
 echo "[OK] yt-dlp：$YTDLP_PATH"
 
