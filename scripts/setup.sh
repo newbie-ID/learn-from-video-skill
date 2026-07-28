@@ -47,15 +47,14 @@ echo "[OK] ffmpeg：$FFMPEG_PATH"
 
 # ---- [2/4] whisper.cpp ----
 echo "---- [2/4] whisper.cpp ----"
-WHISPER_GPU="cpu"   # 实际 backend：v1.9.1 release 无 Vulkan；cublas 需匹配 CUDA runtime，默认 CPU
-detect_gpu && echo "[detect] 检测到 GPU 硬件（whisper.cpp release 无即用 GPU build，本次用 CPU；高级用户可自行换 cublas）"
+WHISPER_GPU="cpu"; detect_gpu && WHISPER_GPU="cuda"   # 有 NVIDIA GPU → cublas(CUDA) build，否则 CPU
 WHISPER_PATH="$(locate_whisper_cli)"
 if [ -z "$WHISPER_PATH" ]; then
   install_whisper_cpp || { echo "[FAIL] whisper.cpp 安装失败，初始化中止"; exit 1; }
   WHISPER_PATH="$(locate_whisper_cli)"
 fi
 [ -n "$WHISPER_PATH" ] || { echo "[FAIL] whisper-cli 不可用，初始化中止"; exit 1; }
-echo "[OK] whisper-cli：$WHISPER_PATH（CPU build）"
+echo "[OK] whisper-cli：$WHISPER_PATH（$([ "$WHISPER_GPU" = "cuda" ] && echo 'GPU·cublas' || echo 'CPU')）"
 
 # ---- [3/4] yt-dlp ----
 echo "---- [3/4] yt-dlp ----"
