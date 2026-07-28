@@ -54,21 +54,24 @@ install_whisper_cpp() {
   local os; os=$(detect_os)
   local dest="$SKILL_ROOT/bin/whisper.cpp"; mkdir -p "$dest"
   local tmp="$dest/_dl.zip"
-  echo "[..] 安装 whisper.cpp（$os）→ $dest" >&2
-  [ "$os" = "darwin" ] && cmd_exists brew && { brew install whisper-cpp && return 0; }
-  local base="https://github.com/ggerganov/whisper.cpp/releases/latest/download" asset=""
+  local base="https://github.com/ggerganov/whisper.cpp/releases/latest/download"
+  [ "$os" = "darwin" ] && cmd_exists brew && { echo "[..] 安装 whisper.cpp（macOS brew）" >&2; brew install whisper-cpp && return 0; }
+  # GPU 现状（v1.9.1）：release 无 Vulkan build；cublas(CUDA) build 需系统装匹配版本 CUDA runtime（不自带 dll），
+  # 对"分发给小白"不友好。故默认 CPU build（稳定、所有机器能跑）。
+  # 硬件有 GPU 的高级用户可自行换 cublas build（需匹配的 CUDA 12.x runtime）或等未来 Vulkan release。
+  local asset=""
   case "$os" in
     win32) asset="whisper-bin-x64.zip" ;;
     linux) asset="whisper-linux-x64.zip" ;;
   esac
+  echo "[..] 安装 whisper.cpp（$os · CPU build）→ $dest" >&2
   if [ -n "$asset" ] && download_with_mirrors "$base/$asset" "$tmp"; then
     { cd "$dest" && unzip -oq _dl.zip && rm -f _dl.zip; } 2>/dev/null || \
     { cd "$dest" && powershell.exe -NoProfile -Command "Expand-Archive -Force _dl.zip ." && rm -f _dl.zip; } 2>/dev/null
-    return 0
+    locate_whisper_cli >/dev/null && return 0
   fi
-  echo "[FAIL] 自动安装 whisper.cpp 失败（release 资源名可能已变）" >&2
-  echo "[HINT] 到 https://github.com/ggerganov/whisper.cpp/releases 手动下载对应平台预编译版，" >&2
-  echo "       解压到 $dest，确保含 whisper-cli（或 main）可执行文件" >&2
+  echo "[FAIL] whisper.cpp 安装失败" >&2
+  echo "[HINT] 到 https://github.com/ggerganov/whisper.cpp/releases 手动下载 *-bin-x64.zip 解压到 $dest" >&2
   return 1
 }
 

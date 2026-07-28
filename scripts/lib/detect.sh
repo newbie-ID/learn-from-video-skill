@@ -37,6 +37,12 @@ detect_gpu_vram_mb() {
   fi
 }
 
+# 是否有可用 GPU（best effort；Vulkan build 对 N/A/I 卡通用，这里主要判 NVIDIA）
+detect_gpu() {
+  local vram; vram=$(detect_gpu_vram_mb)
+  [ -n "$vram" ] && [ "$vram" -gt 0 ] 2>/dev/null
+}
+
 # 物理内存（GB），best effort
 detect_ram_gb() {
   case "$(detect_os)" in

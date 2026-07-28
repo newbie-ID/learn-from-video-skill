@@ -55,7 +55,7 @@ fi
 VIDEO=""
 if [ "$MODE" = "url" ]; then
   echo "[..] 下载视频（同时尝试官方字幕）…"
-  "$YTDLP" -f "bv*+ba/b" --merge-output-format mp4 \
+  "$YTDLP" --ffmpeg-location "$(dirname "$FFMPEG")" -f "bv*+ba/b" --merge-output-format mp4 \
     --write-subs --write-auto-subs --sub-langs "zh-Hans,zh,en,best" --sub-format "srt/vtt/best" \
     -o "$WORK/video.%(ext)s" "$INPUT" >"$LOG" 2>&1 || {
       echo "[FAIL] yt-dlp 下载失败；日志末尾："; tail -n 8 "$LOG" 2>/dev/null
