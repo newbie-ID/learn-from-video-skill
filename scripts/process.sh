@@ -82,11 +82,11 @@ if [ -n "$SUB" ] && [ -s "$SUB" ]; then
   echo "[OK] 使用官方字幕，跳过 Whisper：$SUB"
   [ "$SUB" != "$WORK/transcript.srt" ] && cp "$SUB" "$WORK/transcript.srt"
 else
-  echo "[..] 无官方字幕 → FFmpeg 提音频 + whisper.cpp 转录（中文）…"
+  echo "[..] 无官方字幕 → FFmpeg 提音频 + whisper.cpp 转录（自动检测语言）…"
   AUDIO="$WORK/audio.wav"
   "$FFMPEG" -y -i "$VIDEO" -vn -acodec pcm_s16le -ar 16000 -ac 1 "$AUDIO" >>"$LOG" 2>&1 || {
     echo "[FAIL] FFmpeg 提取音频失败；日志末尾："; tail -n 8 "$LOG" 2>/dev/null; exit 1; }
-  "$WHISPER" -m "$MODEL" -f "$AUDIO" -l zh -osrt -of "$WORK/transcript" >>"$LOG" 2>&1 || {
+  "$WHISPER" -m "$MODEL" -f "$AUDIO" -l auto -osrt -of "$WORK/transcript" >>"$LOG" 2>&1 || {
     echo "[FAIL] whisper.cpp 转录失败；日志末尾："; tail -n 8 "$LOG" 2>/dev/null; exit 1; }
   [ -f "$WORK/transcript.srt" ] || { echo "[FAIL] 未生成 transcript.srt"; exit 1; }
   echo "[OK] 转录完成"

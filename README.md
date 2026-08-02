@@ -23,14 +23,14 @@
 - 🎙️ **面试复盘**：面试录音 / 面试录屏转文稿，做复盘笔记、自测纠错、问答演练
 - 📝 **录音转纪要**：会议、讲座、播客录音整理
 
-> 完整工作流可视化（动画图）后续会发布到 GitHub Pages，本 README 暂不内嵌（GitHub 不渲染 HTML）。
+> 完整工作流可视化（动画图）已发布到 GitHub Pages：[learn-from-video-skill-preview](https://newbie-id.github.io/posts/learn-from-video/learn-from-video-skill-preview.html)（GitHub 不渲染 HTML，故以链接形式给出）。
 
 ## 特性
 
 - 🔗 **多入口**：B站 / YouTube 等链接，或本地**视频 / 音频**文件（mp3 / wav / m4a / mp4 …）
 - 🎙️ **面试/录音友好**：面试录屏、录音直接拖进来转文稿复盘
 - 📝 **字幕优先**：有官方字幕直接用（零成本、100% 准确），无字幕才 whisper.cpp 转录
-- 🎧 **whisper.cpp 中文优先**：单二进制、跨平台、按硬件自动选模型档位
+- 🎧 **whisper.cpp 自动检测语言**：单二进制、跨平台、按硬件自动选模型档位，原片什么语言就转录什么语言
 - 🔁 **学-记-测闭环**：追问学习 / 笔记·PPT·概念图 / 自测题·闪卡
 - 📦 **首次自动配环境**：自动装 FFmpeg / whisper.cpp / yt-dlp + 下游 skill，之后免检
 
@@ -77,6 +77,18 @@
 | 课程视频（CS336 Lecture 1） | ~80 min | ~150–240 min | **522 s**（~8.7 min） | ~**17–28×** |
 
 > CPU 耗时基于 whisper.cpp large-v3 CPU build 通常 ~0.3–0.5× 实时估算，实际因 CPU 型号而异。
+
+## 实测成品 Demo
+
+三个真实视频，每个产出三种成品（学霸笔记 · PPT 演示 · 概念图），全部由本 skill 一键生成，托管在 GitHub Pages 在线查看：
+
+| 视频源 | 语言 | 学霸笔记 | PPT 演示 | 概念图 |
+|---|:---:|---|---|---|
+| **BERT 论文精读**<br>BV1PL411M7eQ · ~38 min | 中文 | [📖 笔记](https://newbie-id.github.io/posts/learn-from-video/demos/bert/note.html) | [🎞️ 演示](https://newbie-id.github.io/posts/learn-from-video/demos/bert/slides.html) | [🕸️ 概念图](https://newbie-id.github.io/posts/learn-from-video/demos/bert/diagram.html) |
+| **LLM 架构与超参数综述**<br>Stanford · lVynu4bo1rY · ~89 min | 英文 | [📖 笔记](https://newbie-id.github.io/posts/learn-from-video/demos/llm-architecture/note.html) | [🎞️ 演示](https://newbie-id.github.io/posts/learn-from-video/demos/llm-architecture/slides.html) | [🕸️ 概念图](https://newbie-id.github.io/posts/learn-from-video/demos/llm-architecture/diagram.html) |
+| **CS224N L1 · Word2Vec**<br>Stanford · BV1Nh8BzrEED_p1 | 英文 | [📖 笔记](https://newbie-id.github.io/posts/learn-from-video/demos/word2vec/note.html) | [🎞️ 演示](https://newbie-id.github.io/posts/learn-from-video/demos/word2vec/slides.html) | [🕸️ 概念图](https://newbie-id.github.io/posts/learn-from-video/demos/word2vec/diagram.html) |
+
+> 中英文视频都能处理：官方字幕命中时直接采用，笔记 / 演示 / 概念图跟随原片语言输出；无字幕时由 whisper.cpp **自动检测语言**转录。
 
 ## 技术栈
 

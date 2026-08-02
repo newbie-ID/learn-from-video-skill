@@ -32,7 +32,7 @@ VRAM=$(detect_gpu_vram_mb); RAM=$(detect_ram_gb)
 TIER="${LFV_MODEL_TIER:-$(pick_model_tier)}"
 echo "[detect] 平台=$OS  显存=${VRAM:-无}MB  内存=${RAM:-未知}GB"
 echo "[detect] Agent skills 目录=$SKILLS_DIR"
-echo "[detect] 推荐模型档位=$TIER（中文优先）"
+echo "[detect] 推荐模型档位=$TIER（按硬件自动选定）"
 echo
 
 # ---- [1/4] FFmpeg ----

@@ -1,6 +1,6 @@
 ---
 name: learn-from-video-skill
-description: "下载视频或音频（B站/YouTube 链接，或本地视频/音频文件；支持面试录音、面试录屏复盘）并转录成带时间戳文稿，再基于文稿做：追问学习、学霸笔记/PPT复习卡/概念图、自测题与闪卡。用于：视频学习、面试复盘、录音转纪要、教程转复习材料。首次自动配置 whisper.cpp/yt-dlp/FFmpeg，字幕优先、无字幕用 whisper.cpp 转录（中文优先）。下游渲染复用 AI_Animation 合集（scholar-notes/ppt-animation/flowchart）。"
+description: "下载视频或音频（B站/YouTube 链接，或本地视频/音频文件；支持面试录音、面试录屏复盘）并转录成带时间戳文稿，再基于文稿做：追问学习、学霸笔记/PPT复习卡/概念图、自测题与闪卡。用于：视频学习、面试复盘、录音转纪要、教程转复习材料。首次自动配置 whisper.cpp/yt-dlp/FFmpeg，字幕优先、无字幕用 whisper.cpp 转录（自动检测语言）。下游渲染复用 AI_Animation 合集（scholar-notes/ppt-animation/flowchart）。"
 version: "0.1.0"
 license: MIT
 triggers:
@@ -55,7 +55,7 @@ bash scripts/setup.sh
 `setup.sh` 会自动完成（每步打印 LLM 友好的状态行）：
 1. **探测环境** — OS / GPU / 显存 / 内存 / 当前 Agent 的标准 skills 目录
 2. **装三件套** — `ffmpeg` / `whisper.cpp` / `yt-dlp`（已存在则跳过；预编译二进制优先，包管理器兜底，全程镜像加速）
-3. **选模型** — 按硬件自动选 `large-v3` / `medium` / `small`（中文优先）并下载 ggml 模型
+3. **选模型** — 按硬件自动选 `large-v3` / `medium` / `small`（档位越高，多语言 / 小语种表现越好）并下载 ggml 模型
 4. **装下游 skill** — 检测 `scholar-notes` / `ppt-animation` / `flowchart` 是否在标准 skills 目录，缺则按 `dependencies.json` 拉取（git clone 优先，失败 fallback 下载 zip + 镜像）
 5. **写快照** — 生成 `env.local.json`（工具路径 + 模型 + 参数 + 平台）
 
@@ -89,7 +89,7 @@ bash scripts/process.sh local "<文件路径>"
 3. **下载**（仅 URL 模式）— yt-dlp 下载视频，**同时尝试 `--write-subs` 拉官方字幕**
 4. **字幕优先判断**：
    - ✅ 拿到官方字幕 → 直接采用（零成本、100% 准确），**跳过 Whisper**
-   - ❌ 没有字幕 → FFmpeg 提取音频（16kHz 单声道 wav）→ whisper.cpp 转录（`-l zh`，输出 srt）
+   - ❌ 没有字幕 → FFmpeg 提取音频（16kHz 单声道 wav）→ whisper.cpp 转录（`-l auto` 自动检测语言，输出 srt）
    - ⚠️ 本地视频通常无现成字幕 → 默认走 whisper.cpp
 5. **生成文稿** — 输出 `library/<id>/transcript.{srt,txt,json}`（带时间戳）
 
